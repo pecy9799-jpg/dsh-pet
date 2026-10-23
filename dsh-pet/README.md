@@ -1,5 +1,13 @@
 # dsh-pet 🐾
 
+> 当前包为非官方桌面抛掷动作测试版 `0.3.8-throw-motion.1`。请优先阅读 [改动与安装恢复说明](MOTION.md) 和 [素材使用范围](MEDIA-NOTICE.md)。原作：[PC2005-cloud/dsh-pet](https://github.com/PC2005-cloud/dsh-pet)。以下为保留的上游文档。
+
+[下载本改版及独立素材包](https://github.com/pecy9799-jpg/dsh-pet/releases/tag/v0.3.8-throw-motion.1) · [完整演示视频](https://github.com/pecy9799-jpg/dsh-pet/releases/download/v0.3.8-throw-motion.1/demo.mp4)
+
+![桌面甩出、碰撞和落地动作预览](https://raw.githubusercontent.com/pecy9799-jpg/dsh-pet/v0.3.8-throw-motion.1/docs/throw-motion-demo.gif)
+
+以上演示为本改版代码与实际素材的隔离预览，动画属于基于 [PC2005-cloud/dsh-pet](https://github.com/PC2005-cloud/dsh-pet) 的 AI 二创，素材禁止商用。下面的 npm 徽章和原版安装入口仍指向官方版本。
+
 <p align="center">
   <a href="https://www.npmjs.com/package/dsh-pet"><img alt="npm version" src="https://img.shields.io/npm/v/dsh-pet?label=npm&color=blue"></a>
   <a href="https://www.npmjs.com/package/dsh-pet"><img alt="npm monthly downloads" src="https://img.shields.io/npm/dm/dsh-pet?label=%E6%9C%88%E4%B8%8B%E8%BD%BD&color=brightgreen"></a>

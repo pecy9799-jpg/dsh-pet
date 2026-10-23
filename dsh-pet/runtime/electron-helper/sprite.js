@@ -104,6 +104,8 @@ class PetSprite {
     this.dragFollowToken = 0;
     this.throwRef = null; // 抛掷 rAF handle
     this.throwToken = 0;
+    this.flightPose = false;
+    this.suspendedAnim = null;
     // 位置指令（POST /position）的跟随 rAF（spring 与 line 共用同一个句柄）：与拖拽跟手分开——
     // 拖拽没有终点（指针一直喂目标），这条有终点，收敛/到点后必须自己收掉，否则 rAF 永远转下去
     this.posFollow = null;
@@ -211,8 +213,18 @@ class PetSprite {
     this.tip.className = S.TOOLTIP_CLASS;
     this.tip.setAttribute('aria-hidden', 'true');
 
-    stage.appendChild(this.videoA);
-    stage.appendChild(this.videoB);
+    const motionLayer = document.createElement('div');
+    motionLayer.className = 'pet-motion';
+    motionLayer.append(this.videoA, this.videoB);
+    this.motion = new PetThrowMotion(motionLayer);
+    if (this.assetRoot === 'main') {
+      this.motion.videoArt = new PetThrowVideo(motionLayer, PetThrowMotion.assetBase);
+      this.motion.art = this.motion.videoArt.root;
+      this.motion.videoArt.onUnavailable = () => {
+        if (this.flightPose || this.dragState.dragging) this.switchTo(this.suspendedAnim, false);
+      };
+    }
+    stage.appendChild(motionLayer);
     stage.appendChild(this.hit);
     this.el.appendChild(this.bubble);
     this.el.appendChild(this.tip);
@@ -490,6 +502,28 @@ class PetSprite {
 
   // 双缓冲切换（与浏览器同一套：前台 opacity 切换 + 降级视频清 handler 并停播，防残留 ended 雪崩）
   switchTo(next, nextOnce, playbackId, url) {
+    if (playbackId || url) {
+      // Explicit API playback keeps its upstream receipt and takes visual priority.
+      this.motion.blocked = true;
+      this.motion.reset();
+      this.motionNativeAnim = next;
+    } else if (this.flightPose || this.dragState.dragging) {
+      if (this.motion.blocked) {
+        this.anim = this.motionNativeAnim || this.anim;
+        return;
+      }
+      next = this.motion.state.grounded ? this.animations.idle[0] : this.suspendedAnim;
+      nextOnce = false;
+      this.anim = next;
+      this.once = false;
+      if (
+        !this.motion.state.grounded &&
+        this.motion.videoArt &&
+        !this.motion.videoArt.disabled &&
+        !this.motion.media.matches
+      )
+        return;
+    }
     if (!next) return;
     const pending = this.pending;
     if (pending && pending.anim === next && pending.once === nextOnce) {
@@ -508,7 +542,7 @@ class PetSprite {
       return;
     }
     const gen = ++this.gen;
-    this.pending = { anim: next, once: nextOnce, gen };
+    this.pending = { anim: next, once: nextOnce, gen, playbackId };
     const target = this.front === 0 ? this.videoB : this.videoA;
     const el = target;
     if (!el) return;
@@ -544,7 +578,7 @@ class PetSprite {
       el.removeEventListener('loadeddata', onReady);
       window.clearTimeout(loadTimer);
       el.onerror = null;
-      if (this.pending && this.pending.gen !== gen) return;
+      if (this.gen !== gen) return;
       const old = this.front === 0 ? this.videoA : this.videoB;
       el.classList.add('is-front');
       if (old && old !== el) {
@@ -612,6 +646,8 @@ class PetSprite {
   applyFreeze(next) {
     if (this.frozen === next) return;
     this.frozen = next;
+    this.motion.blocked = next;
+    this.motion.reset();
     const el = this.front === 0 ? this.videoA : this.videoB;
     const stamp = '[dsh-pet] ' + new Date().toTimeString().slice(0, 8) + ' pet=' + this.pet.id;
     if (next) {
@@ -707,7 +743,8 @@ class PetSprite {
       this.playback = null; // 先清再上报：后续链式换源不该把它当成"被打断"
       this.reportPlayback(done, 'ended');
     }
-    if (this.dragState.active) return;
+    if (this.motion.blocked && !this.frozen) this.motion.blocked = false;
+    if (this.dragState.active || this.flightPose) return;
     // 占用锁（issue #122 第 4 项）：冻结期间**动画链一律不推进**——事件动画播完就停在最后一帧。
     // 与浏览器 src/client/pet.ts 的 handleEnded 同一处判断、同一原因：下面四条路都会换源播放，
     // 而它们读的是**当前工作状态**（this.workState），跟 workTick 无关，所以 onWorkTick 那道门禁
@@ -906,6 +943,7 @@ class PetSprite {
       vel.vy = S.springStep(vel.vy, y, target.y, dt, this.physics.throwPower);
       x += vel.vx * dt;
       y += vel.vy * dt;
+      this.updateThrowMotion('drag', vel.vx, vel.vy, x, y);
       this.sendBounds(x, y); // 移动的是窗口（this.pos 实时更新）；sprite 在本窗口内不动
       this.dragFollow = requestAnimationFrame(step);
     };
@@ -916,18 +954,62 @@ class PetSprite {
    *  同时清速度状态 throwState——否则「抓住后温柔放下」会残留最后一次飞行速度，
    *  静止的宠物点一下就误判为飞行中。点击积分用的飞行动态由 onPointerDown 提前记录。 */
   stopThrow() {
+    const wasFlying = this.flightPose;
+    this.flightPose = false;
+    this.motion.reset();
     this.throwToken++;
     if (this.throwRef !== null) {
       cancelAnimationFrame(this.throwRef);
       this.throwRef = null;
     }
     this.throwState = null;
+    if (wasFlying) this.resumeAfterFlight();
+  }
+
+  beginThrowMotion() {
+    this.motion.blocked = this.frozen;
+    if (!this.motion.videoArt || this.motion.videoArt.disabled || this.motion.media.matches) return;
+    for (const id of new Set([this.playback, this.pending?.playbackId])) {
+      if (id) this.reportPlayback(id, 'cancelled', 'superseded');
+    }
+    this.playback = null;
+    this.pending = null;
+    ++this.gen;
+    const native = this.front === 0 ? this.videoA : this.videoB;
+    native.pause();
+    native.onended = null;
+  }
+
+  resumeAfterFlight() {
+    this.suspendedAnim = null;
+    if (this.motion.blocked || this.ac.signal.aborted) return;
+    if (!this.resumeWorkStatusAnim() && this.animations.idle.length)
+      this.playOnce(S.pick(this.animations.idle, this.anim));
+  }
+
+  updateThrowMotion(mode, vx, vy, x = this.pos.x, y = this.pos.y) {
+    const space = this.throwSpaceOf();
+    const bounds = space.bounds[S.screenOfBox(space, x, y)] || space.bounds[0];
+    const grounded = !!bounds && y >= bounds.maxY - 1 && vy >= -70;
+    if (this.motion.blocked) return grounded;
+    const changed = grounded !== !!this.motion.state.grounded;
+    this.motion.set(mode, vx, vy, grounded);
+    if (mode === 'drag') this.stage.style.transform = grounded ? 'translateY(' + this.bottomPad + 'px)' : 'none';
+    if (changed) this.switchTo(grounded ? this.animations.idle[0] : this.suspendedAnim, false);
+    return grounded;
   }
 
   /** 抛掷驱动：重力 + 边缘反弹 + 落地摩擦，落定后写入 customPos */
   startThrow(px, py, vx, vy) {
     this.stopDragFollow();
     this.stopMove();
+    this.stopSquash();
+    this.beginThrowMotion();
+    this.flightPose = true;
+    this.suspendedAnim = this.suspendedAnim || S.pick(this.animations.drag) || this.animations.idle[0];
+    this.switchTo(this.suspendedAnim, false);
+    this.motion.mirror = this.facing === 'right';
+    this.updateThrowMotion('flight', vx, vy, px, py);
     // 边界 = 显示器工作区**并集**：空洞是墙（宠物再也飞不进不可见区域），屏缝不是墙（跨屏弹跳照旧）
     // confineToScreen 开启时改为锁定**松手这一刻所在的那块屏**：屏缝同样当墙，只在目标屏内弹。
     // 锁定屏在抛掷开始时定下、飞行途中不重取；relayout 改了屏数时由 throwStepRegion 退回不锁定。
@@ -944,13 +1026,32 @@ class PetSprite {
       const fallingVy = state.vy; // 本帧积分前的竖直速度（正=下落）：即落地冲击速度
       // 每帧重取：显示器变化时 relayout() 会让缓存失效，res.screen 必须与这一份对应
       const sp = this.throwSpaceOf();
+      let motionHit = null;
+      const recordHit = (before, after) => {
+        if (!after.bounced) return;
+        const floor = sp.bounds[after.screen] || sp.bounds[0];
+        const kind =
+          before.vx * after.vx < 0
+            ? 'wall'
+            : before.vy < -70 && after.vy > 0
+              ? 'ceiling'
+              : floor && after.y >= floor.maxY - 1 && !prevGrounded && before.vy > 70
+                ? 'ground'
+                : null;
+        if (!kind) return;
+        const speed = kind === 'wall' ? before.vx : before.vy;
+        if (!motionHit || Math.abs(speed) > Math.abs(motionHit.speed)) motionHit = { kind, speed };
+      };
       // 细分积分：弹弓没有速度上限，一帧可能跨过上百 px——不拆会跳过「落地/反弹」那几帧，
       // Q 弹、地面摩擦与 atRest 判定都会漏。普通甩抛每帧位移远小于 SUBSTEP_PX，
       // 这里算出 1 步，与旧实现的单步积分逐位相同。
       const substeps = S.throwSubsteps(state.vx, state.vy, dt);
       let res = S.throwStepRegion(state, dt / substeps, sp, this.physics, lockScreen);
+      recordHit(state, res);
       for (let i = 1; i < substeps && !res.atRest; i++) {
+        const before = res;
         res = S.throwStepRegion(res, dt / substeps, sp, this.physics, lockScreen);
+        recordHit(before, res);
       }
       state = { x: res.x, y: res.y, vx: res.vx, vy: res.vy };
       this.throwState = state;
@@ -980,6 +1081,7 @@ class PetSprite {
             { x: o.x, y: o.y, vx: o.vx, vy: o.vy, size: o.size },
           );
           if (hit) {
+            this.motion.impact('pet', Math.hypot(state.vx - o.vx, state.vy - o.vy), state.vx - o.vx);
             // 飞行方：按动量结果继续弹开；被撞方：主进程转发给目标窗口 → 目标窗 startThrow
             state.vx = hit.fvx;
             state.vy = hit.fvy;
@@ -992,12 +1094,14 @@ class PetSprite {
           }
         }
       }
+      this.updateThrowMotion('flight', state.vx, state.vy, res.x, res.y);
+      if (motionHit) this.motion.impact(motionHit.kind, motionHit.speed, motionHit.speed);
       this.sendBounds(res.x, res.y);
       // 落地 Q 弹：只在空中→地面转换帧触发一次，力度随冲击速度（轻落 0.8 ~ 重砸 0.55）。
       // 「地面」是**当前所在屏**的底边——多屏各有各的地面高度
       const curBounds = sp.bounds[res.screen] || sp.bounds[0];
       const grounded = curBounds ? res.y >= curBounds.maxY - 1 : false;
-      if (res.bounced && grounded && !prevGrounded) {
+      if (this.motion.blocked && res.bounced && grounded && !prevGrounded) {
         const frontEl = this.front === 0 ? this.videoA : this.videoB;
         this.startSquash(frontEl, S.landingSquash(fallingVy));
       }
@@ -1005,6 +1109,9 @@ class PetSprite {
       if (res.atRest) {
         this.throwRef = null;
         this.throwState = null;
+        this.flightPose = false;
+        this.motion.set('idle');
+        this.resumeAfterFlight();
         this.customPos = { rx: (this.pos.x + this.halfW) / VIEW.w, ry: (this.pos.y + this.halfH) / VIEW.h };
         window.__dshPetDebug.lastDragRelease = { x: this.pos.x, y: this.pos.y };
         return;
@@ -1118,6 +1225,7 @@ class PetSprite {
     this.stopDragFollow();
     this.stopThrow();
     this.startThrow(this.pos.x, this.pos.y, vx, vy);
+    this.motion.impact('pet', Math.hypot(vx, vy), vx);
   }
 
   /** Q 弹挤压：前台视频垂直压扁（贴地锚定，transform-origin:bottom）再回弹；
@@ -1274,9 +1382,12 @@ class PetSprite {
       d.dragging = true;
       // 真正开始拖拽才把舞台拍平（人物随光标拿起；与浏览器 dragging 语义一致）
       this.stage.style.transform = 'none';
-      if (this.animations.drag.length) {
-        this.playOnce(S.pick(this.animations.drag));
-      }
+      this.stopSquash();
+      this.beginThrowMotion();
+      this.suspendedAnim = S.pick(this.animations.drag) || this.animations.idle[0];
+      this.switchTo(this.suspendedAnim, false);
+      this.motion.mirror = this.facing === 'right';
+      this.updateThrowMotion('drag', 0, 0);
       this.syncInputBusy(); // 拖拽成立：主进程兜底通道闭嘴（见 inputBusy）
     }
     // 记录指针轨迹（screenX/Y 采样：与视口坐标只差常数偏移，速度一致；初速估算用；÷scale 进 CSS 系）
@@ -1329,12 +1440,7 @@ class PetSprite {
           yUp: e.screenY,
         };
       }
-      // 拖拽松手：workStatus 非终态时恢复状态循环，否则回 idle（与浏览器 handlePointerUp 一致）
-      // 修复：旧实现 switchTo(idle,false)（loop=true，ended 永不触发）→ 随机链永远回不来，
-      // 永远卡在同一段待机动画；改为 playOnce（once=true）播一遍 → ended → handleEnded → playIdle 随机链
-      if (!this.resumeWorkStatusAnim()) {
-        if (this.animations.idle.length) this.playOnce(S.pick(this.animations.idle, this.anim));
-      }
+      // Keep the airborne pose until an actual landing; gentle release recovers below.
       // 释放位置 = 弹簧跟随后的实际包围盒左上角（this.pos 实时；不是指针目标——
       // 跟手滞后时落点跟随宠物实际位置，与浏览器 boxPx 同语义）
       const px = this.pos.x;
@@ -1383,6 +1489,8 @@ class PetSprite {
           );
           this.startThrow(px, py, vel.vx, vel.vy);
         } else {
+          this.motion.set('idle');
+          this.resumeAfterFlight();
           // customPos 语义 = 宠物**中心**比例（position() 用 rx*W - halfW 还原左上角；
           // startThrow 落定也按同一公式存），松手无边界夹取
           this.customPos = { rx: (px + this.halfW) / VIEW.w, ry: (py + this.halfH) / VIEW.h };

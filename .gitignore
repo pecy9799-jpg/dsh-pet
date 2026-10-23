@@ -51,3 +51,9 @@ dsh-pet/dist-app/
 .DS_Store
 Thumbs.db
 desktop.ini
+
+# Local motion-preview build and verification output
+.motion-test-results/
+tools/throw-preview/index.html
+dsh-pet/output/
+dsh-pet/.playwright-cli/

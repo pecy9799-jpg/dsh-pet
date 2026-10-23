@@ -1,6 +1,6 @@
 {
   "name": "dsh-pet",
-  "version": "0.3.8",
+  "version": "0.3.8-throw-motion.1",
   "description": "吃白饭的蓝色大肥鱼，赖在 DeepSeek Harness 里不走了。平时爱玩魔方、爱吃各种零食、偶尔打个盹，闲不住就在桌面上溜达两圈，被你拖来甩去也照旧赖着；你忙起来它跟着忙前忙后，也会帮你打理余额钱包，闲下来爱碎碎念，还乐意陪你唠两句。",
   "icon": "assets/logo.png",
   "keywords": [
@@ -14,13 +14,13 @@
     "cordis",
     "react"
   ],
-  "homepage": "https://github.com/PC2005-cloud/dsh-pet#readme",
+  "homepage": "https://github.com/pecy9799-jpg/dsh-pet#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/PC2005-cloud/dsh-pet.git"
+    "url": "git+https://github.com/pecy9799-jpg/dsh-pet.git"
   },
   "bugs": {
-    "url": "https://github.com/PC2005-cloud/dsh-pet/issues"
+    "url": "https://github.com/pecy9799-jpg/dsh-pet/issues"
   },
   "_comment": [
     "=============== dsh-pet 包清单说明 ===============",
@@ -69,7 +69,9 @@
     "assets/config.jsonc",
     "assets/logo.png",
     "scripts/ensure-electron.mjs",
-    "cordis.patch.yml"
+    "cordis.patch.yml",
+    "MOTION.md",
+    "MEDIA-NOTICE.md"
   ],
   "scripts": {
     "bundle": "tsdown",
@@ -82,7 +84,9 @@
     "dist": "node scripts/dist.mjs",
     "dev:mock": "node scripts/dev/mock-server.mjs",
     "build": "node scripts/prepare.js",
-    "prepack": "npm run build && npm run typecheck && npm run lint && npm run format:check && node scripts/prepack-check.js && npm run check:openapi",
+    "prepack": "npm run build && npm run typecheck && npm run lint && npm run format:check && npm run test:motion && node scripts/prepack-check.js && npm run check:openapi",
+    "test:motion": "node --test scripts/tests/throw-motion.test.cjs scripts/tests/throw-video.test.cjs",
+    "preview:motion": "node ../tools/throw-preview/prepare.mjs && node ../tools/throw-preview/serve.mjs",
     "check:openapi": "node scripts/check-openapi.mjs",
     "test": "node --experimental-strip-types --import ./scripts/test-register.mjs --test src/**/*.test.ts",
     "typecheck": "tsc --noEmit && tsc -p tsconfig.test.json",

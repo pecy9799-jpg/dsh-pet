@@ -50,6 +50,38 @@
         opacity: 0;
         transition: opacity 0.18s ease;
       }
+      .pet-motion {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        transform-origin: 50% 54%;
+      }
+      .pet-flight-video {
+        position: absolute;
+        inset: 0;
+        opacity: 0;
+        pointer-events: none;
+      }
+      .pet-flight-video video {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        opacity: 0;
+      }
+      .pet-flight-video video.is-front {
+        opacity: 1;
+      }
+      .pet-motion.has-flight-art .pet-flight-video {
+        opacity: 1;
+      }
+      .pet-motion.has-flight-art video.pet-video {
+        opacity: 0;
+      }
+      .pet-motion.flight-handoff video.pet-video {
+        transition: none;
+      }
       video.pet-video.is-front {
         opacity: 1;
       }
@@ -263,6 +295,8 @@
          桌面端同模式拆分：constants（基础设施）→ sprite（宠物本体）→ events（事件联动）→ renderer（启动入口） -->
     <script src="./shared-core.js"></script>
     <script src="./constants.js"></script>
+    <script src="./throw-video.js"></script>
+    <script src="./throw-motion.js"></script>
     <script src="./sprite.js"></script>
     <script src="./events.js"></script>
     <script src="./renderer.js"></script>
