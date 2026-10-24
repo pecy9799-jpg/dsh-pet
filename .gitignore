@@ -57,3 +57,4 @@ desktop.ini
 tools/throw-preview/index.html
 dsh-pet/output/
 dsh-pet/.playwright-cli/
+.playwright-cli/

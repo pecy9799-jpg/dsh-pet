@@ -16,12 +16,14 @@ async (page) => {
     const sample = () => {
       const rootOpacity = +getComputedStyle(a.root).opacity;
       const opacities = [p.videoA, p.videoB]
-        .map((v) => +getComputedStyle(v).opacity)
+        // During native promotion the canvas is a copy of that same native frame.
+        .map((v) => (a.phase === "native" ? 0 : +getComputedStyle(v).opacity))
         .concat(
           a.videos.map(
             (v) => rootOpacity * Number(getComputedStyle(v).opacity),
           ),
         );
+      if (a.context) opacities.push(rootOpacity);
       if (p.motion.state.mode !== "idle" || a.visible)
         rows.push({
           phase: a.phase,

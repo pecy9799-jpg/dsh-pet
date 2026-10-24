@@ -47,12 +47,17 @@
       this.media = window.matchMedia('(prefers-reduced-motion: reduce)');
       this.state = { mode: 'idle', vx: 0, vy: 0, started: 0, impact: null };
       this.frame = null;
+      this.flightMirror = null;
       this.blocked = false;
       this.step = this.step.bind(this);
     }
 
     set(mode, vx = 0, vy = 0, grounded = false) {
       if (this.blocked) return;
+      if (mode !== 'flight') this.flightMirror = null;
+      // The recorded launch leans right. Use actual release/flight velocity,
+      // retaining the last direction near vertical motion or while settling.
+      else if (!grounded && Number.isFinite(vx) && Math.abs(vx) > 40) this.flightMirror = vx < 0;
       if (mode !== this.state.mode) this.state.started = performance.now();
       Object.assign(this.state, { mode, vx, vy, grounded });
       this.wake();
@@ -88,7 +93,7 @@
       const pose = poseAt(this.state, now);
       const videoActive = this.videoArt?.tick(this.state.mode, this.state.grounded) || false;
       if (this.art) {
-        const mirror = this.videoArt ? this.videoArt.mirror(this.mirror) : this.mirror;
+        const mirror = this.videoArt ? this.videoArt.mirror(this.mirror, this.flightMirror) : this.mirror;
         this.art.style.transform = mirror ? 'scaleX(-1)' : '';
         if (!this.videoArt) {
           const frame = Math.floor(Math.max(0, now - this.state.started) / 100) % 8;
@@ -110,6 +115,7 @@
       this.frame = null;
       this.videoArt?.stop();
       this.state.mode = 'idle';
+      this.flightMirror = null;
       this.state.grounded = false;
       this.state.impact = null;
       this.layer.style.transform = '';

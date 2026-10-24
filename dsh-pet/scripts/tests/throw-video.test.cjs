@@ -2,12 +2,14 @@ const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const vm = require('node:vm');
-function harness() {
+function harness(surface = false) {
   let now = 0;
   const elements = [],
     timers = new Set();
+  const painted = [];
+  const context2d = { drawImage: (video) => painted.push({ video, time: video.currentTime }) };
   const document = {
-    createElement() {
+    createElement(tag) {
       const classes = new Set();
       const e = {
         style: {},
@@ -27,6 +29,7 @@ function harness() {
           return Promise.resolve();
         },
       };
+      if (surface && tag === 'canvas') e.getContext = () => context2d;
       elements.push(e);
       return e;
     },
@@ -48,9 +51,26 @@ function harness() {
     advance: (ms) => (now += ms),
     elements,
     timers,
+    painted,
   };
 }
 const flush = () => new Promise(queueMicrotask);
+
+test('launch follows flight direction while collision and native handoff keep their own facing', async () => {
+  const { art } = harness();
+  art.tick('flight');
+  await flush();
+  assert.equal(art.phase, 'launch');
+  assert.equal(art.mirror(false, true), true);
+  assert.equal(art.mirror(true, false), false);
+  art.impact('wall', 1);
+  art.tick('flight');
+  await flush();
+  assert.equal(art.mirror(false, false), true);
+  art.phase = 'native';
+  assert.equal(art.mirror(false, true), false);
+  assert.equal(art.mirror(true, false), true);
+});
 test('drag transitions stay fast, suspended loop stays normal, resting recovery stops', async () => {
   const { art, timers } = harness();
   art.tick('drag');
@@ -220,4 +240,126 @@ test('a cold source seeks after metadata and never commits an obsolete load', as
   await flush();
   assert.equal(art.visible, false);
   assert.equal(next.paused, true);
+});
+
+test('a cold landing retains the airborne picture until the landing is ready', async () => {
+  const { art, advance } = harness();
+  art.tick('drag');
+  await flush();
+  const front = art.front;
+  const next = art.videos[1 - front];
+  let ready;
+  next.load = () => {
+    next.readyState = 0;
+  };
+  next.addEventListener = (event, callback) => {
+    if (event === 'loadedmetadata') ready = callback;
+  };
+  art.impact('ground', 1);
+  assert.equal(art.tick('flight', true), true);
+  assert.equal(art.front, front);
+  assert.equal(art.visible, true);
+  assert.equal(art.videos[front].paused, true);
+  // A settling bounce while metadata is pending cannot cancel/restart the landing.
+  const token = art.token;
+  art.tick('flight', false);
+  art.tick('flight', true);
+  advance(300);
+  art.impact('ground', 1);
+  art.tick('flight', true);
+  assert.equal(art.token, token);
+  assert.equal(art.visible, true);
+  next.readyState = 2;
+  ready();
+  await flush();
+  assert.equal(art.phase, 'impact');
+  assert.equal(art.action, 'ground');
+});
+
+test('recovery waits for the sought video frame and cancels stale frame callbacks', async () => {
+  const { art } = harness();
+  art.tick('drag');
+  await flush();
+  const front = art.front;
+  const next = art.videos[1 - front];
+  let present,
+    cancelled = 0;
+  next.requestVideoFrameCallback = (callback) => {
+    present = callback;
+    return 7;
+  };
+  next.cancelVideoFrameCallback = (id) => {
+    assert.equal(id, 7);
+    cancelled++;
+  };
+  art.tick('idle');
+  await flush();
+  assert.equal(art.front, front);
+  assert.equal(art.visible, true);
+  present(0, { mediaTime: 0 });
+  assert.equal(art.front, front);
+  present(0, { mediaTime: 7.1 });
+  assert.equal(art.phase, 'outro');
+  assert.equal(art.front, 1 - front);
+  art.tick('drag');
+  await flush();
+  // Arm another recovery, then grab it before its frame is presented.
+  art.tick('idle');
+  await flush();
+  const stale = present;
+  art.stop();
+  stale(0, { mediaTime: 7.1 });
+  assert.equal(cancelled, 1);
+  assert.equal(art.visible, false);
+  assert.equal(art.frameRequest, null);
+});
+
+test('the persistent surface retains its last picture while the next decoder seeks', async () => {
+  const { art, painted } = harness(true);
+  art.tick('drag');
+  await flush();
+  const current = art.videos[art.front];
+  assert.equal(painted.at(-1).video, current);
+  const count = painted.length;
+  current.seeking = true;
+  assert.equal(art.paint(current), false);
+  assert.equal(painted.length, count);
+  current.seeking = false;
+  current.readyState = 0;
+  assert.equal(art.paint(current), false);
+  assert.equal(painted.length, count);
+});
+
+test('native recovery keeps the surface until the native layer has been painted', async () => {
+  const { art, painted } = harness(true);
+  const native = { readyState: 4, currentTime: 1 };
+  art.nativeVideo = () => native;
+  art.tick('drag');
+  await flush();
+  art.hide(true);
+  assert.equal(art.visible, true);
+  assert.equal(art.phase, 'native');
+  assert.equal(painted.at(-1).video, native);
+  art.tick('idle');
+  art.tick('idle');
+  assert.equal(art.visible, true);
+  art.tick('idle');
+  assert.equal(art.visible, false);
+  assert.equal(art.phase, 'idle');
+});
+
+test('an explicit stop interrupts native recovery and a failed native load is bounded', async () => {
+  const { art, advance } = harness(true);
+  art.nativeVideo = () => ({ readyState: 0 });
+  art.tick('drag');
+  await flush();
+  art.hide(true);
+  art.stop();
+  assert.equal(art.visible, false);
+  art.tick('drag');
+  await flush();
+  art.hide(true);
+  advance(1100);
+  assert.equal(art.tick('idle'), false);
+  assert.equal(art.phase, 'idle');
 });

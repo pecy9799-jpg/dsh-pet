@@ -43,6 +43,26 @@ test('flight tilt follows direction, scales are bounded for extreme/invalid inpu
   assert.ok(Motion.poseAt({ mode: 'flight', vx: 1600, vy: -1000, started: 0 }, 0).angle > 0);
   assert.ok(Motion.poseAt({ mode: 'flight', vx: -1600, vy: -1000, started: 0 }, 0).angle < 0);
 });
+test('flight artwork mirrors the actual horizontal velocity and keeps vertical throws stable', () => {
+  const h = harness();
+  const m = new h.Motion({ style: {}, dataset: {} });
+  m.set('drag', -900, 0);
+  assert.equal(m.flightMirror, null);
+  m.set('flight', -800, -900);
+  assert.equal(m.flightMirror, true);
+  m.set('flight', -12, 900);
+  assert.equal(m.flightMirror, true);
+  m.set('flight', 800, 0);
+  assert.equal(m.flightMirror, false);
+  m.set('flight', -800, 0, true);
+  assert.equal(m.flightMirror, false);
+  m.reset();
+  m.set('flight', 15, -900);
+  assert.equal(m.flightMirror, null);
+  m.set('flight', NaN, 0);
+  assert.equal(m.flightMirror, null);
+});
+
 test('ground compresses vertically; wall/pet compress horizontally, then recover', () => {
   const { Motion } = harness();
   for (const kind of ['ground', 'ceiling', 'wall', 'pet']) {

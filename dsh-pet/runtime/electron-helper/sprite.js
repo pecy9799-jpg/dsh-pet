@@ -219,6 +219,7 @@ class PetSprite {
     this.motion = new PetThrowMotion(motionLayer);
     if (this.assetRoot === 'main') {
       this.motion.videoArt = new PetThrowVideo(motionLayer, PetThrowMotion.assetBase);
+      this.motion.videoArt.nativeVideo = () => (this.front === 0 ? this.videoA : this.videoB);
       this.motion.art = this.motion.videoArt.root;
       this.motion.videoArt.onUnavailable = () => {
         if (this.flightPose || this.dragState.dragging) this.switchTo(this.suspendedAnim, false);
@@ -953,10 +954,17 @@ class PetSprite {
   /** 停止抛掷（空中被抓/点菜单/回家时立即定格在当前落点）。
    *  同时清速度状态 throwState——否则「抓住后温柔放下」会残留最后一次飞行速度，
    *  静止的宠物点一下就误判为飞行中。点击积分用的飞行动态由 onPointerDown 提前记录。 */
-  stopThrow() {
+  stopThrow(preserveFrame = false) {
     const wasFlying = this.flightPose;
+    const holdFrame = preserveFrame && this.motion.videoArt?.visible;
     this.flightPose = false;
     this.motion.reset();
+    if (holdFrame) {
+      // A quick re-grab must keep the last picture while the native layer seeks.
+      this.motion.videoArt.hide(true);
+      this.motion.setArtVisible(true);
+      this.motion.wake();
+    }
     this.throwToken++;
     if (this.throwRef !== null) {
       cancelAnimationFrame(this.throwRef);
@@ -980,6 +988,15 @@ class PetSprite {
     native.onended = null;
   }
 
+  settleStage() {
+    // Restore foot padding continuously while the decoded custom picture is held.
+    if (this.motion.videoArt?.visible && !this.motion.media.matches) {
+      this.stage.classList.add('motion-release');
+      void this.stage.offsetWidth;
+    }
+    this.stage.style.transform = 'translateY(' + this.bottomPad + 'px)';
+  }
+
   resumeAfterFlight() {
     this.suspendedAnim = null;
     if (this.motion.blocked || this.ac.signal.aborted) return;
@@ -990,11 +1007,20 @@ class PetSprite {
   updateThrowMotion(mode, vx, vy, x = this.pos.x, y = this.pos.y) {
     const space = this.throwSpaceOf();
     const bounds = space.bounds[S.screenOfBox(space, x, y)] || space.bounds[0];
-    const grounded = !!bounds && y >= bounds.maxY - 1 && vy >= -70;
+    // Enter on actual contact; keep the stance through tiny settling bounces.
+    const settleHeight = 1 + (70 * 70) / (2 * Math.max(1, this.physics.gravity));
+    const tolerance = mode === 'drag' ? 1 : this.motion.state.grounded ? settleHeight : 0;
+    const grounded = !!bounds && y >= bounds.maxY - tolerance && vy >= -70;
     if (this.motion.blocked) return grounded;
     const changed = grounded !== !!this.motion.state.grounded;
     this.motion.set(mode, vx, vy, grounded);
-    if (mode === 'drag') this.stage.style.transform = grounded ? 'translateY(' + this.bottomPad + 'px)' : 'none';
+    if (mode === 'drag') {
+      if (grounded) this.settleStage();
+      else {
+        this.stage.classList.remove('motion-release');
+        this.stage.style.transform = 'none';
+      }
+    }
     if (changed) this.switchTo(grounded ? this.animations.idle[0] : this.suspendedAnim, false);
     return grounded;
   }
@@ -1035,7 +1061,7 @@ class PetSprite {
             ? 'wall'
             : before.vy < -70 && after.vy > 0
               ? 'ceiling'
-              : floor && after.y >= floor.maxY - 1 && !prevGrounded && before.vy > 70
+              : floor && after.y >= floor.maxY && before.vy > 70
                 ? 'ground'
                 : null;
         if (!kind) return;
@@ -1110,7 +1136,7 @@ class PetSprite {
         this.throwRef = null;
         this.throwState = null;
         this.flightPose = false;
-        this.motion.set('idle');
+        this.motion.set('idle', 0, 0, true);
         this.resumeAfterFlight();
         this.customPos = { rx: (this.pos.x + this.halfW) / VIEW.w, ry: (this.pos.y + this.halfH) / VIEW.h };
         window.__dshPetDebug.lastDragRelease = { x: this.pos.x, y: this.pos.y };
@@ -1327,7 +1353,7 @@ class PetSprite {
         });
       }
     }
-    this.stopThrow(); // 空中抓取：从当前落点开始新拖拽（this.pos 实时）
+    this.stopThrow(true); // 空中抓取：保留画面，从当前落点开始新拖拽（this.pos 实时）
     this.stopDragFollow();
     this.stopMove();
     this.dragTrail = [];
@@ -1380,7 +1406,9 @@ class PetSprite {
     if (!d.dragging) {
       if (Math.hypot(dx, dy) < S.DRAG_THRESHOLD) return;
       d.dragging = true;
+      this.syncInputBusy(); // The input lease starts before any artwork changes.
       // 真正开始拖拽才把舞台拍平（人物随光标拿起；与浏览器 dragging 语义一致）
+      this.stage.classList.remove('motion-release');
       this.stage.style.transform = 'none';
       this.stopSquash();
       this.beginThrowMotion();
@@ -1388,7 +1416,6 @@ class PetSprite {
       this.switchTo(this.suspendedAnim, false);
       this.motion.mirror = this.facing === 'right';
       this.updateThrowMotion('drag', 0, 0);
-      this.syncInputBusy(); // 拖拽成立：主进程兜底通道闭嘴（见 inputBusy）
     }
     // 记录指针轨迹（screenX/Y 采样：与视口坐标只差常数偏移，速度一致；初速估算用；÷scale 进 CSS 系）
     const now = performance.now();
@@ -1407,7 +1434,7 @@ class PetSprite {
     d.dragging = false;
     this.hit.classList.remove('dragging');
     this.stopDragFollow(); // 弹簧跟随立即停（位置定格在实时 this.pos）
-    this.stage.style.transform = 'translateY(' + this.bottomPad + 'px)';
+    this.settleStage();
     this.syncInputBusy(); // 拖拽结束：交还给常规判定（幂等，非拖拽时多调一次不发 IPC）
     // 提示复位：点击/拖拽期间收起的悬浮提示，指针仍在命中区内就恢复（与浏览器 handlePointerUp 同一处理）。
     // 用 hitRect 几何判定而不是 getBoundingClientRect：命中区是窗口坐标里的权威几何，与 onMouseMove 同源。

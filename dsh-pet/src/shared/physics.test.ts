@@ -18,6 +18,7 @@ import {
   SUBSTEP_MAX,
   SUBSTEP_PX,
   THROW_SPEED_ANCHOR,
+  estimateReleaseVelocity,
   pullAngle,
   slingshotPower,
   slingshotRefDist,
@@ -26,6 +27,60 @@ import {
   throwSubsteps,
   throwVelocity,
 } from './physics.ts';
+
+describe('estimateReleaseVelocity —— 放下与甩出的区分', () => {
+  const fast = [
+    { t: 0, x: 0, y: 0 },
+    { t: 40, x: 60, y: 0 },
+    { t: 80, x: 120, y: 0 },
+  ];
+
+  test('正常快速拖动松手仍能甩出，短暂事件间隔不影响力度', () => {
+    const immediate = estimateReleaseVelocity(fast, 80);
+    assert.ok(immediate && immediate.vx > 1000);
+    assert.deepEqual(estimateReleaseVelocity(fast, 100), immediate);
+  });
+
+  test('停住 60 / 80 毫秒再松手，不继承之前的速度', () => {
+    for (const pause of [60, 80, 160]) assert.equal(estimateReleaseVelocity(fast, 80 + pause), null);
+  });
+
+  test('停顿尚未到超时，但末段均速已经很低，也按放下处理', () => {
+    assert.equal(estimateReleaseVelocity(fast, 130), null);
+  });
+
+  test('先快速拖动再慢慢放下，之前的峰值不能触发甩出', () => {
+    const trail = [...fast, { t: 120, x: 126, y: 0 }, { t: 140, x: 128, y: 0 }];
+    assert.equal(estimateReleaseVelocity(trail, 140), null);
+  });
+
+  test('高频鼠标采样下的慢拖与轻微抖动也不甩出', () => {
+    for (const speed of [0, 100, 300]) {
+      const trail = Array.from({ length: 101 }, (_, t) => ({ t, x: (t * speed) / 1000, y: 0 }));
+      assert.equal(estimateReleaseVelocity(trail, 100), null);
+    }
+  });
+
+  test('50 毫秒采样间隔的斜向快速拖动仍能识别方向', () => {
+    for (const sign of [-1, 1]) {
+      const trail = [0, 50, 100].map((t) => ({ t, x: (sign * t * 24) / 50, y: (-t * 24) / 50 }));
+      const v = estimateReleaseVelocity(trail, 100);
+      assert.ok(v && Math.sign(v.vx) === sign && v.vy < 0);
+    }
+  });
+
+  test('最后一帧突然加速的甩动仍可触发', () => {
+    const v = estimateReleaseVelocity(
+      [
+        { t: 0, x: 0, y: 0 },
+        { t: 40, x: 4, y: 0 },
+        { t: 80, x: 84, y: 0 },
+      ],
+      80,
+    );
+    assert.ok(v && v.vx > 1000);
+  });
+});
 
 /** 初速大小（throwVelocity 的模长） */
 const speedOf = (angle: number, power: number): number => {

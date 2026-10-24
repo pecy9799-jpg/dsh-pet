@@ -23,7 +23,9 @@ export const TRAIL_KEEP_MS = 200;
 /** 初速估算窗口（ms） */
 export const RELEASE_WINDOW_MS = 150;
 /** 松手前停顿超过它 = 温柔放下（不带残余速度），即使之前甩过 */
-export const RELEASE_STALE_MS = 150;
+export const RELEASE_STALE_MS = 60;
+/** 松手前这一小段的实际均速必须足够快，避免之前的峰值把已减速的拖动甩出去（ms） */
+export const RELEASE_TAIL_MS = 60;
 /** 窗口太短视为不可估算（ms） */
 export const MIN_SPAN_MS = 20;
 /** 分段速度的最小 dt（ms）：高回报率鼠标事件可低至 1ms，过小 dt 会把抖动放大成虚假峰值，短段向前合并 */
@@ -277,7 +279,7 @@ export const slingshotVelocity = (
  * 末段仍在加速时按 ACCEL_REF 比例增益（最多 ACCEL_GAIN_MAX），软钳速封顶。
  * 总力度：软钳速**之后**整体 ×physics.throwPower —— 初速、软上限（3600×p）、
  * 死区判定（相对力度）三者一体线性缩放（p=1 即现状）。
- * 返回 null = 温柔放下（轨迹为空 / 停留过久 / 窗口太短 / 峰值速度低于死区），调用方不抛。
+ * 返回 null = 温柔放下（轨迹为空 / 停留过久 / 窗口太短 / 松手前均速或最终速度低于死区），调用方不抛。
  */
 export const estimateReleaseVelocity = (
   trail: DragSample[],
@@ -286,9 +288,26 @@ export const estimateReleaseVelocity = (
 ): { vx: number; vy: number } | null => {
   if (trail.length === 0) return null;
   const last = trail[trail.length - 1];
-  if (now - last.t > RELEASE_STALE_MS) return null;
+  if (now - last.t >= RELEASE_STALE_MS) return null;
   const win = trail.filter((s) => now - s.t <= RELEASE_WINDOW_MS);
   if (win.length < 2) return null;
+  // 把最后一次移动到松手之间的停顿也计入均速；窗口边界插值，兼容低频鼠标采样。
+  const tailStart = Math.max(win[0].t, now - RELEASE_TAIL_MS);
+  let tailX = win[0].x;
+  let tailY = win[0].y;
+  for (let i = 1; i < win.length; i++) {
+    const a = win[i - 1];
+    const b = win[i];
+    if (b.t < tailStart) continue;
+    const u = b.t > a.t ? Math.min(1, Math.max(0, (tailStart - a.t) / (b.t - a.t))) : 1;
+    tailX = a.x + (b.x - a.x) * u;
+    tailY = a.y + (b.y - a.y) * u;
+    break;
+  }
+  const tailSpan = now - tailStart;
+  if (tailSpan < MIN_SPAN_MS) return null;
+  const tailSpeed = (Math.hypot(last.x - tailX, last.y - tailY) / tailSpan) * 1000;
+  if (softClampSpeed(tailSpeed) * physics.throwPower < DEAD_ZONE_SPEED) return null;
   const t0 = win[0].t;
   const x0 = win[0].x;
   const y0 = win[0].y;
