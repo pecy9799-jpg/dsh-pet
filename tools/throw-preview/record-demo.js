@@ -5,8 +5,8 @@ async page => {
   await page.evaluate(async()=>{
     const p=preview.pet,wait=ms=>new Promise(r=>setTimeout(r,ms));
     const label=text=>document.querySelector('#status').textContent=text;
-    document.querySelector('h1').textContent='1.0.0 · 桌面动作预览';
-    document.querySelector('header>p').textContent='修整拿起轮廓、配色与落地交接；按实际水平速度翻转。';
+    document.querySelector('h1').textContent='1.0.1 · 桌面动作预览';
+    document.querySelector('header>p').textContent='新版修正轻放及落地收尾人物形状，逐步恢复原版站姿；保留方向翻转与碰撞动作。';
     preview.reset();p.sendBounds(340,280);p.motion.set('drag');
     label('拿起 → 悬空');await wait(1500);
     label('向右甩出：保留画面朝右倾斜');p.motion.set('flight',700,-300);await wait(1500);

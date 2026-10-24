@@ -1,18 +1,22 @@
 # dsh-pet 🐾
 
-> 此分支是桌面抛掷动作非官方 Windows 正式版，基于上游 0.3.8。当前版本 `1.0.0`：改善落地衔接、重新抠取拿起动画轮廓、校正配色，新增按甩出方向翻转及松手防误甩。完整改动见 [更新记录](docs/CHANGELOG-throw-motion.md)，安装和恢复见 [MOTION.md](dsh-pet/MOTION.md)。原项目：[PC2005-cloud/dsh-pet](https://github.com/PC2005-cloud/dsh-pet)。素材允许开源使用、禁止商用，详见 [素材说明](dsh-pet/MEDIA-NOTICE.md)。
+> 此分支是桌面抛掷动作非官方 Windows 正式版，基于上游 0.3.8。当前版本 `1.0.1`：在 1.0.0 基础上修正轻放及落地的收尾人物形状，让末段逐步恢复原版站姿；保留方向翻转、防误甩及已有动作。完整改动见 [更新记录](docs/CHANGELOG-throw-motion.md)，安装和恢复见 [MOTION.md](dsh-pet/MOTION.md)。原项目：[PC2005-cloud/dsh-pet](https://github.com/PC2005-cloud/dsh-pet)。素材允许开源使用、禁止商用，详见 [素材说明](dsh-pet/MEDIA-NOTICE.md)。
 
-`1.0.0` 为本 Fork 的独立版本号，代码仍维护在 `feature/desktop-throw-animations` 分支。正式发布的验收范围、结果和限制见 [Windows 验收记录](docs/ACCEPTANCE-1.0.0.md)。
+`1.0.1` 为本 Fork 的独立版本号，代码仍维护在 `feature/desktop-throw-animations` 分支。正式发布的验收范围、结果和限制见 [Windows 验收记录](docs/ACCEPTANCE-1.0.1.md)。
 
 ## 本改版下载与演示
 
-[下载 1.0.0 正式版](https://github.com/pecy9799-jpg/dsh-pet/releases/tag/v1.0.0) · [本版演示视频](https://github.com/pecy9799-jpg/dsh-pet/releases/download/v1.0.0/demo.mp4) · [新增动画素材包](https://github.com/pecy9799-jpg/dsh-pet/releases/download/v1.0.0/dsh-pet-motion-assets-1.0.0.zip)
+[下载 1.0.1 正式版](https://github.com/pecy9799-jpg/dsh-pet/releases/tag/v1.0.1) · [本版演示视频](https://github.com/pecy9799-jpg/dsh-pet/releases/download/v1.0.1/demo.mp4) · [新增动画素材包](https://github.com/pecy9799-jpg/dsh-pet/releases/download/v1.0.1/dsh-pet-motion-assets-1.0.1.zip)
 
 ![甩出、侧撞、撞顶、落地与贴地动作演示](docs/throw-motion-demo.gif)
 
 演示使用本版代码和实际动画素材，在隔离预览页录制；部分动作通过预览接口触发，不能作为所有真实手势均已验证的证据。动画为以原作角色为参考的 AI 二创；原作：[PC2005-cloud/dsh-pet](https://github.com/PC2005-cloud/dsh-pet)。GIF 为 15fps 预览，完整视频为 25fps，运行素材为 24fps。
 
-安装本改版请下载 Release 中的 `dsh-pet-1.0.0.tgz`，按 [安装与恢复说明](dsh-pet/MOTION.md#安装与恢复) 操作。素材 ZIP 单独提供两段透明 WebM、动作时间段、提示词和使用声明，不能当作插件安装。以下保留的上游文档及 npm 徽章指向官方项目和官方版本。
+本次修正轻放及落地的收尾人物形状，原版叹气的启动时机和播放进度保持不变。下图依次为修改前、修改后、原版参考；收尾使用原作待机画面，整段 AI 动作仍可能与原版不同。
+
+![收尾人物形状对比](docs/shape-recovery-comparison.png)
+
+安装本改版请下载 Release 中的 `dsh-pet-1.0.1.tgz`，按 [安装与恢复说明](dsh-pet/MOTION.md#安装与恢复) 操作。素材 ZIP 单独提供两段透明 WebM、动作时间段、提示词和使用声明，不能当作插件安装。以下保留的上游文档及 npm 徽章指向官方项目和官方版本。
 
 <p align="center">
   <a href="https://www.npmjs.com/package/dsh-pet"><img alt="npm version" src="https://img.shields.io/npm/v/dsh-pet?label=npm&color=blue"></a>
