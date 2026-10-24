@@ -5,7 +5,7 @@ async page => {
   await page.evaluate(async()=>{
     const p=preview.pet,wait=ms=>new Promise(r=>setTimeout(r,ms));
     const label=text=>document.querySelector('#status').textContent=text;
-    document.querySelector('h1').textContent='0.3.8-throw-motion.2 · 桌面动作预览';
+    document.querySelector('h1').textContent='1.0.0 · 桌面动作预览';
     document.querySelector('header>p').textContent='修整拿起轮廓、配色与落地交接；按实际水平速度翻转。';
     preview.reset();p.sendBounds(340,280);p.motion.set('drag');
     label('拿起 → 悬空');await wait(1500);

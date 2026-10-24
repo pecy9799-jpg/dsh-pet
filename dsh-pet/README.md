@@ -1,10 +1,10 @@
 # dsh-pet 🐾
 
-> 当前包为非官方桌面抛掷动作测试版 `0.3.8-throw-motion.2`。本版改善落地衔接、拿起动画边缘与配色，新增按甩出方向翻转及松手防误甩。请优先阅读 [改动与安装恢复说明](MOTION.md) 和 [素材使用范围](MEDIA-NOTICE.md)。原作：[PC2005-cloud/dsh-pet](https://github.com/PC2005-cloud/dsh-pet)。以下为保留的上游文档。
+> 当前包为非官方桌面抛掷动作 Windows 正式版 `1.0.0`。本版改善落地衔接、拿起动画边缘与配色，新增按甩出方向翻转及松手防误甩。请优先阅读 [改动与安装恢复说明](MOTION.md) 和 [素材使用范围](MEDIA-NOTICE.md)。原作：[PC2005-cloud/dsh-pet](https://github.com/PC2005-cloud/dsh-pet)。以下为保留的上游文档。
 
-[下载本改版及独立素材包](https://github.com/pecy9799-jpg/dsh-pet/releases/tag/v0.3.8-throw-motion.2) · [本版演示视频](https://github.com/pecy9799-jpg/dsh-pet/releases/download/v0.3.8-throw-motion.2/demo.mp4)
+[下载本改版及独立素材包](https://github.com/pecy9799-jpg/dsh-pet/releases/tag/v1.0.0) · [本版演示视频](https://github.com/pecy9799-jpg/dsh-pet/releases/download/v1.0.0/demo.mp4)
 
-![桌面甩出、碰撞和落地动作预览](https://raw.githubusercontent.com/pecy9799-jpg/dsh-pet/v0.3.8-throw-motion.2/docs/throw-motion-demo.gif)
+![桌面甩出、碰撞和落地动作预览](https://raw.githubusercontent.com/pecy9799-jpg/dsh-pet/v1.0.0/docs/throw-motion-demo.gif)
 
 以上演示为本版代码与实际素材的隔离预览，部分动作通过预览接口触发；动画属于基于 [PC2005-cloud/dsh-pet](https://github.com/PC2005-cloud/dsh-pet) 的 AI 二创，素材禁止商用。下面的 npm 徽章和原版安装入口仍指向官方版本。
 

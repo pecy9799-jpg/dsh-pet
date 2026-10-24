@@ -1,6 +1,8 @@
-# 桌面抛掷动作测试版
+# 桌面抛掷动作 Windows 正式版
 
-此包为基于 [PC2005-cloud/dsh-pet](https://github.com/PC2005-cloud/dsh-pet) 的非官方改版，版本 `0.3.8-throw-motion.2`。上游基线为 `0.3.8`，提交 `c696095c5786e0eeb25fec0f37a9cdcf30059151`。
+此包为基于 [PC2005-cloud/dsh-pet](https://github.com/PC2005-cloud/dsh-pet) 的非官方改版，版本 `1.0.0`。上游基线为 `0.3.8`，提交 `c696095c5786e0eeb25fec0f37a9cdcf30059151`。
+
+`1.0.0` 是本 Fork 的独立正式编号，沿用 `.2` 候选版的动作和物理实现；本次以 Windows x64 为验收环境，不代表上游原作者发布了同名版本。代码继续维护在本 Fork 的 `feature/desktop-throw-animations` 分支。
 
 新增默认大肥鱼的甩出、侧撞、撞顶、落地动作和 `><` 碰撞表情；贴地时恢复正常站姿，不持续蹲下。动画已参照原版待机配色校正。自定义画面在首帧准备好后交接，不通过叠加两个姿态完成过渡，避免闪烁和双影。过渡片段加速、悬空循环原速。
 
@@ -18,10 +20,10 @@
 
 ## 安装与恢复
 
-先退出 DSH，将发布附件 `dsh-pet-0.3.8-throw-motion.2.tgz` 下载到自己的电脑。使用 DSH 桌面应用自带 CLI 执行以下命令，路径替换成实际下载文件位置，profile 替换成自己使用的 profile：
+先退出 DSH，将发布附件 `dsh-pet-1.0.0.tgz` 下载到自己的电脑。使用 DSH 桌面应用自带 CLI 执行以下命令，路径替换成实际下载文件位置，profile 替换成自己使用的 profile：
 
 ```text
-dsh plugin --profile desktop add ./dsh-pet-0.3.8-throw-motion.2.tgz
+dsh plugin --profile desktop add ./dsh-pet-1.0.0.tgz
 ```
 
 重新启动 DSH 后生效。该包使用原有 `dsh-pet` 名称，是替换安装，不能与官方同名插件重复加载。无需复制用户配置或粘贴 API Key；动画运行时不调用模型。
@@ -36,4 +38,6 @@ dsh plugin --profile desktop add ./dsh-pet-0.3.8-throw-motion.2.tgz
 
 `npm run preview:motion` 启动只读本机预览。它只提供仓库公开资源，支持视频范围读取，不连接真实 DSH、不读取用户会话或凭据。打开显示的预览地址后，可用 Playwright CLI 的 `run-code --filename ../tools/throw-preview/check-actions.js`、`check-handoff.js`、`check-physics.js` 和 `check-upstream.js` 验证动作、衔接及新版接口。各测试以当前预览页为入口，没有写死本机绝对路径。
 
-本次优先验证 Windows x64 桌面环境。macOS、Linux 和真实多显示器跨窗口手势不能由隔离浏览器测试代替，尚未验证的项目不声明为通过。素材条件见 [MEDIA-NOTICE.md](MEDIA-NOTICE.md)。
+本正式版的验收环境为 Windows x64、DSH `0.2.1-rc.2`。项目测试 1025 项通过、1 项跳过，动作测试 20 项通过；新装、升级、回退、卸载及配置保留检查通过。真实 DSH 独立 profile 完成鉴权配置、动画和状态接口检查；生产桌面 main、preload、renderer 通过两种缩放配置下的 10 组事件注入检查，140 帧落地检查未发现整个人物消失帧。
+
+桌面检查使用生产代码及实际窗口，宿主通信通过测试适配器转发到真实独立宿主路由。系统级鼠标操作被验收工具的透明窗口目标识别拦截，未计为通过；不能把这些结果说成完整人工手势验收。macOS、Linux、长期人工使用和全部真实跨屏动作尚未充分验证。正式发布不保证没有缺陷。素材条件见 [MEDIA-NOTICE.md](MEDIA-NOTICE.md)。

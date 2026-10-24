@@ -2,6 +2,12 @@
 
 原项目与原作者：[PC2005-cloud/dsh-pet](https://github.com/PC2005-cloud/dsh-pet)。本 Fork 为非官方 AI 动画二创，代码保留 MIT 许可；素材允许开源使用、禁止商用，介绍、展示及分发均须附上原项目链接。
 
+## 1.0.0（2026-10-24）
+
+本 Fork 的独立 Windows 正式版本，基于上游 0.3.8，延续 `0.3.8-throw-motion.2` 的动作与松手判定实现。补充发布验收、安装与回退检查，统一正式版编号、下载说明和演示；此版本不是原作者的官方发布。源码仍位于本 Fork 的 `feature/desktop-throw-animations` 分支。
+
+具体检查结果与限制见发布附件 `verification.json`。正式发布表示本 Fork 对本次验收范围作出判断，不保证没有缺陷或所有系统都已验证；macOS、Linux 和长期人工使用仍需后续反馈。
+
 ## 0.3.8-throw-motion.2（2026-10-24）
 
 相对 `.1` 发布版，更新以下内容：
