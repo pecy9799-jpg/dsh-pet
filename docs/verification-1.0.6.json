@@ -1,0 +1,126 @@
+{
+  "version": "1.0.6",
+  "tag": "v1.0.6",
+  "date": "2026-10-26",
+  "platform": "Windows x64",
+  "repository": "https://github.com/pecy9799-jpg/dsh-pet",
+  "branch": "feature/desktop-throw-animations",
+  "originalProject": "https://github.com/PC2005-cloud/dsh-pet",
+  "upstreamBaseline": "0.3.8",
+  "previousPublicRelease": "1.0.1",
+  "tests": {
+    "project": {
+      "passed": 1025,
+      "skipped": 1,
+      "failed": 0
+    },
+    "motion": {
+      "passed": 20,
+      "failed": 0
+    },
+    "buildTypecheckLintFormatMediaOpenAPI": "passed"
+  },
+  "media": {
+    "comparison": "public 1.0.1 to final 1.0.6",
+    "frames": 241,
+    "width": 640,
+    "height": 360,
+    "fps": 24,
+    "codec": "lossless VP9-alpha",
+    "filledOuterSilhouetteExactlyUnchangedThresholds": [
+      4,
+      16,
+      32,
+      128
+    ],
+    "alphaChangesOnlyWithinRearHairInnerRegionFrames53to152": true,
+    "finalSevenFramesYUVAExactlyUnchanged": true,
+    "reactionClipUnchangedFrom1_0_1": true,
+    "flightSha256": "ca8af25dd4e843df2cf28d578cd060b2df71743a88976b1e32958fea47234802",
+    "reactionSha256": "f669b71e62a68fc7b32d2a554f1f26034047803670b1912a1ff673c96d1ffdc4"
+  },
+  "innerPatchComparedToLocal1_0_5": {
+    "outerBoundaryAlphaExactlyUnchanged": true,
+    "innerAlphaIntentionallyChanged": true,
+    "innerBrightPixels60to67": {
+      "before": [
+        63,
+        63,
+        22,
+        27,
+        27,
+        17,
+        18,
+        18
+      ],
+      "after": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    }
+  },
+  "offlineElectronHeldPlayback": {
+    "completedLoops": 3,
+    "scope": "held video in isolated Electron, not complete OS mouse acceptance"
+  },
+  "localUpgrade": {
+    "host": "DSH 0.2.1-rc.3",
+    "from": "1.0.5",
+    "to": "1.0.6",
+    "normalRestartAndUserFeedback": true,
+    "runtimeFilesMatching": 19,
+    "protectedOtherPluginAndConfigFilesUnchanged": 547,
+    "existingPeerDependencyWarnings": true,
+    "note": "Published archive updates documentation; runtime files match installed local 1.0.6."
+  },
+  "package": {
+    "files": 392,
+    "sha256": "002ff12c7c48eb14bd025c8f6525f9996a8873fdec4591ac52510b1a4b2e07a7",
+    "allFilesMatchSource": true,
+    "runtimeSha256": {
+      "runtime/electron-helper/index.html": "488d5f55b0fc74683e62352471bdc617280db6010b4e141b6af2f076f3b4a715",
+      "runtime/electron-helper/constants.js": "126fa106de42bb5c03ce31f79e4713eba061e7f839c4c9fb48e2fba607a9a1d8",
+      "runtime/electron-helper/desktop-geometry.js": "c367be61368b0ba21f778fb359989b4496e7c42b62d59294f5491ab0586df3a5",
+      "runtime/electron-helper/dpi-linearization.js": "c781cdfb115186ef42ddafe70099edfd25586c24bb8b3371c599afb94792181c",
+      "runtime/electron-helper/events.js": "d892310ba0961d073682634374143ee7cb1c03c2eae32b24e736a721744e76b8",
+      "runtime/electron-helper/host-liveness.js": "6cb68274436cbcfda99f2f991f929f8c2db596153081b107549f13d72b64c3cf",
+      "runtime/electron-helper/main.js": "9cc92b8c854766b58b26b3d70f40776d20d74838e207928306b157ef7e3eab6d",
+      "runtime/electron-helper/pointer-target.js": "033971ae73a400f83de6cdae5453e432c1296e3d14b0404573cf7b5d67cbd0af",
+      "runtime/electron-helper/preload.js": "e3420829cadf117e12624a2758aed44c0e2abe08d72be2ea466e7270003bcd4d",
+      "runtime/electron-helper/renderer.js": "ce54ccaf57dfbbe2a0115e601df0932462a92a740dab108c24ca02fe422e67ca",
+      "runtime/electron-helper/shared-core.js": "9d4cf2ff4f14457c5b12f6400a4628bedcbb1df4a38ef9fa2ba96979b6cbb324",
+      "runtime/electron-helper/sprite.js": "2cae32f5c845817f00fe2de50d100db6c6d90d9f653c56932297eb79e861fa98",
+      "runtime/electron-helper/throw-motion.js": "242bb0e25ffc045ffe42f1ebf220208221a6173c1c7dfd6785912037d35761f4",
+      "runtime/electron-helper/throw-video.js": "fca7154f932408b616e176e2013fb68654de568ab8379407f20b13f7cf0872e5",
+      "runtime/electron-helper/topmost-watchdog.js": "80ad8e22f163e22f0783f771b5d5ce65b99220d26646b5dec51bdb5a00e06e3e",
+      "runtime/electron-helper/tray-platform.js": "79ca254ccf65995e9234c45ded600feeadaf18191e38193a983df5843b1fbea1",
+      "runtime/electron-helper/package.json": "8cf1275c9a520d92c4e997b7e28074de9881c6394522c6ca15d0fc84cd8c7ca1",
+      "runtime/electron-helper/throw-flight.webm": "ca8af25dd4e843df2cf28d578cd060b2df71743a88976b1e32958fea47234802",
+      "runtime/electron-helper/throw-reactions.webm": "f669b71e62a68fc7b32d2a554f1f26034047803670b1912a1ff673c96d1ffdc4"
+    }
+  },
+  "credentialRuleScan": {
+    "textFilesScanned": 495,
+    "rules": [
+      "github-token",
+      "model-api-key",
+      "aws-access-key",
+      "private-key",
+      "personal-path"
+    ],
+    "matches": 0,
+    "scope": "tracked source and final TGZ text; no absolute no-leak guarantee"
+  },
+  "limitations": [
+    "AI artwork still differs from original; no guarantee all fringes disappear on all backgrounds.",
+    "Only inner hair matte changes; alpha is not identical across the whole frame.",
+    "macOS, Linux, long-duration use, all cross-monitor gestures unverified.",
+    "Fresh install, direct public 1.0.1 upgrade and rollback not repeated in this revision."
+  ]
+}

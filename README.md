@@ -1,22 +1,24 @@
 # dsh-pet 🐾
 
-> 此分支是桌面抛掷动作非官方 Windows 正式版，基于上游 0.3.8。当前版本 `1.0.1`：在 1.0.0 基础上修正轻放及落地的收尾人物形状，让末段逐步恢复原版站姿；保留方向翻转、防误甩及已有动作。完整改动见 [更新记录](docs/CHANGELOG-throw-motion.md)，安装和恢复见 [MOTION.md](dsh-pet/MOTION.md)。原项目：[PC2005-cloud/dsh-pet](https://github.com/PC2005-cloud/dsh-pet)。素材允许开源使用、禁止商用，详见 [素材说明](dsh-pet/MEDIA-NOTICE.md)。
+> 此分支是基于上游 0.3.8 的非官方桌面抛掷动作 Windows 正式版。当前版本 **1.0.6**：减少拿起、悬空扭动时头发和身体外沿的白灰残边，补修后侧卷发内部空隙；保留 1.0.1 的收尾人物形状、碰撞动作、甩出方向及松手判定。完整改动见 [更新记录](docs/CHANGELOG-throw-motion.md)，安装和恢复见 [MOTION.md](dsh-pet/MOTION.md)。原作：[PC2005-cloud/dsh-pet](https://github.com/PC2005-cloud/dsh-pet)。素材允许开源使用、禁止商用，详见 [素材说明](dsh-pet/MEDIA-NOTICE.md)。
 
-`1.0.1` 为本 Fork 的独立版本号，代码仍维护在 `feature/desktop-throw-animations` 分支。正式发布的验收范围、结果和限制见 [Windows 验收记录](docs/ACCEPTANCE-1.0.1.md)。
+`1.0.6` 为本 Fork 的独立正式版本号，代码仍维护在 `feature/desktop-throw-animations` 分支。此前本机 1.0.2～1.0.5 的修正合并在本版首次公开发布。验证范围和限制见 [Windows 验收记录](docs/ACCEPTANCE-1.0.6.md)。
 
 ## 本改版下载与演示
 
-[下载 1.0.1 正式版](https://github.com/pecy9799-jpg/dsh-pet/releases/tag/v1.0.1) · [本版演示视频](https://github.com/pecy9799-jpg/dsh-pet/releases/download/v1.0.1/demo.mp4) · [新增动画素材包](https://github.com/pecy9799-jpg/dsh-pet/releases/download/v1.0.1/dsh-pet-motion-assets-1.0.1.zip)
+[下载 1.0.6 正式版](https://github.com/pecy9799-jpg/dsh-pet/releases/tag/v1.0.6) · [白边修正对比视频](https://github.com/pecy9799-jpg/dsh-pet/releases/download/v1.0.6/demo.mp4) · [独立动画素材包](https://github.com/pecy9799-jpg/dsh-pet/releases/download/v1.0.6/dsh-pet-motion-assets-1.0.6.zip)
 
-![甩出、侧撞、撞顶、落地与贴地动作演示](docs/throw-motion-demo.gif)
+![1.0.1 与 1.0.6 悬空动画对比，深浅两种背景](docs/white-edge-demo.gif)
 
-演示使用本版代码和实际动画素材，在隔离预览页录制；部分动作通过预览接口触发，不能作为所有真实手势均已验证的证据。动画为以原作角色为参考的 AI 二创；原作：[PC2005-cloud/dsh-pet](https://github.com/PC2005-cloud/dsh-pet)。GIF 为 15fps 预览，完整视频为 25fps，运行素材为 24fps。
+演示将此前公开版 1.0.1 与本版实际透明视频在相同背景合成，正常速度为 24fps；GIF 为 12fps 预览。两边使用同一帧号，未模糊或重缩放人物。该对比用于观察素材差异，不代表完整真实鼠标手势验收。
 
-本次修正轻放及落地的收尾人物形状，原版叹气的启动时机和播放进度保持不变。下图依次为修改前、修改后、原版参考；收尾使用原作待机画面，整段 AI 动作仍可能与原版不同。
+![60、63、67 帧后侧卷发内缘局部对比](docs/inner-hair-comparison.png)
 
-![收尾人物形状对比](docs/shape-recovery-comparison.png)
+局部图比较本机 1.0.5 与最终 1.0.6，展示最后一次内缘补修。修正针对额外白灰污染，保留原有深色描边和正常白色衣饰；不宣称所有背景下均无边缘差异。1.0.6 仅在卷发内缘调整少量透明度，人物外轮廓不变。
 
-安装本改版请下载 Release 中的 `dsh-pet-1.0.1.tgz`，按 [安装与恢复说明](dsh-pet/MOTION.md#安装与恢复) 操作。素材 ZIP 单独提供两段透明 WebM、动作时间段、提示词和使用声明，不能当作插件安装。以下保留的上游文档及 npm 徽章指向官方项目和官方版本。
+以上均为基于 [PC2005-cloud/dsh-pet](https://github.com/PC2005-cloud/dsh-pet) 角色的非官方 AI 二创。原有甩出、侧撞、撞顶、落地及贴地动作可参考 [1.0.1 历史演示](https://github.com/pecy9799-jpg/dsh-pet/releases/download/v1.0.1/demo.mp4)，它不是本版素材的重录视频。
+
+安装请下载 Release 的 `dsh-pet-1.0.6.tgz`，按 [安装与恢复说明](dsh-pet/MOTION.md#安装与恢复) 操作。素材 ZIP 不能作为插件安装。以下保留的上游文档及 npm 徽章指向官方项目和官方版本。
 
 <p align="center">
   <a href="https://www.npmjs.com/package/dsh-pet"><img alt="npm version" src="https://img.shields.io/npm/v/dsh-pet?label=npm&color=blue"></a>

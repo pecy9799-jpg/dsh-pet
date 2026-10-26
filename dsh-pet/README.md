@@ -1,12 +1,12 @@
 # dsh-pet 🐾
 
-> 当前包为非官方桌面抛掷动作 Windows 正式版 `1.0.1`。本版修正轻放和落地的收尾人物形状，逐步恢复原版站姿；保留 1.0.0 的动作、方向翻转和松手防误甩。请优先阅读 [改动与安装恢复说明](MOTION.md) 和 [素材使用范围](MEDIA-NOTICE.md)。原作：[PC2005-cloud/dsh-pet](https://github.com/PC2005-cloud/dsh-pet)。以下为保留的上游文档。
+> 非官方桌面抛掷动作 Windows 正式修订版 **1.0.6**，基于上游 0.3.8。减少拿起、悬空扭动时的外沿白灰残边，并补修后侧卷发内部空隙。保留已有动作、方向翻转、松手防误甩和收尾站姿；仅卷发内缘调整少量透明度，人物外轮廓保持不变。改动及安装见 [MOTION.md](MOTION.md)，素材限制见 [MEDIA-NOTICE.md](MEDIA-NOTICE.md)。原作：[PC2005-cloud/dsh-pet](https://github.com/PC2005-cloud/dsh-pet)。
 
-[下载本改版及独立素材包](https://github.com/pecy9799-jpg/dsh-pet/releases/tag/v1.0.1) · [本版演示视频](https://github.com/pecy9799-jpg/dsh-pet/releases/download/v1.0.1/demo.mp4)
+[下载本版及素材包](https://github.com/pecy9799-jpg/dsh-pet/releases/tag/v1.0.6) · [1.0.1 与 1.0.6 白边修正对比视频](https://github.com/pecy9799-jpg/dsh-pet/releases/download/v1.0.6/demo.mp4)
 
-![桌面甩出、碰撞和落地动作预览](https://raw.githubusercontent.com/pecy9799-jpg/dsh-pet/v1.0.1/docs/throw-motion-demo.gif)
+![悬空白边修正对比](https://raw.githubusercontent.com/pecy9799-jpg/dsh-pet/v1.0.6/docs/white-edge-demo.gif)
 
-以上演示为本版代码与实际素材的隔离预览，部分动作通过预览接口触发；动画属于基于 [PC2005-cloud/dsh-pet](https://github.com/PC2005-cloud/dsh-pet) 的 AI 二创，素材禁止商用。下面的 npm 徽章和原版安装入口仍指向官方版本。
+以上是实际透明素材在相同深浅背景上的同步合成，不是完整真实手势验收。动画为基于 [PC2005-cloud/dsh-pet](https://github.com/PC2005-cloud/dsh-pet) 的 AI 二创，素材允许开源使用、禁止商用。以下上游 npm 徽章和安装入口仍指向官方版本。
 
 <p align="center">
   <a href="https://www.npmjs.com/package/dsh-pet"><img alt="npm version" src="https://img.shields.io/npm/v/dsh-pet?label=npm&color=blue"></a>
